@@ -1,114 +1,54 @@
 import "./App.css";
 import {useState, useEffect} from "react"
+import { CSSTransition } from 'react-transition-group';
 
 function App() {
+  const [weather, setWeather] = useState([])
+  const [input, setInput] = useState('')
+  const [showData, setShowData] = useState(false);
 
-  const [users, setUsers] = useState([])
-  const [theme, setTheme] = useState('🌞')
+  const ApiKey = '8f109fefc6c64e2a81a130342240706'
  
-  const toggleTheme = () => {
-    if (theme === '🌞') {
-      setTheme('🌙')
-      document.getElementById('body')
-      document.body.style.backgroundColor = 'black'
-      document.body.style.color = 'white'
-      const themeNav = document.querySelector('.Nav') 
-      themeNav.style.backgroundColor = 'black'
-      themeNav.style.color = 'white'
-      const themeBtn = document.querySelector('.theme-btn')
-      themeBtn.style.backgroundColor = 'transparent'
 
-    
-
-      const cardThemes = document.querySelectorAll('.card')
-      cardThemes.forEach(cardTheme => {
-        cardTheme.style.backgroundColor = 'black'
-        cardTheme.style.border = '2px solid white'
-        cardTheme.style.color = 'white'
-
-        cardTheme.addEventListener('mouseenter', () => {
-          cardTheme.style.boxShadow = '0 5px 10px white'
-        })
-        cardTheme.addEventListener('mouseleave', () => {
-          cardTheme.style.boxShadow = 'none'
-        })
-      })
-
-
-
-    } else {
-      setTheme('🌞')
-      document.getElementById('body')
-      document.body.style.backgroundColor = 'white'
-      const themeNav = document.querySelector('.Nav') 
-      themeNav.style.backgroundColor = 'rgb(255, 255, 255)'
-      themeNav.style.color = 'black'
-      const themeBtn = document.querySelector('.theme-btn')
-      themeBtn.style.backgroundColor = 'white'
-
-     
-
-      const cardThemes = document.querySelectorAll('.card')
-    
-      cardThemes.forEach(cardTheme => {
-        cardTheme.style.backgroundColor = 'white'
-        cardTheme.style.border = '2px solid black'
-        cardTheme.style.color = 'black'
-        //hover effect
-        cardTheme.addEventListener('mouseenter', () => {
-          cardTheme.style.boxShadow = '0 5px 10px black'
-        })
-        cardTheme.addEventListener('mouseleave', () => {
-          cardTheme.style.boxShadow = 'none'
-        })
-      })
-
-     
-    }
+const HandleSearch = async () => {
+  if (input === '') {
+    return alert('Please enter a city')
   }
-    const info = async () => {
-     try{
-      const response = await fetch('http://dummyjson.com/users')
-      if (!response.ok) {
-        const message =  alert(`an error has occured: ${response.status}`)
-        throw new Error(message)
-       }
-      const data = await response.json()
-      setUsers(data.users)
-      console.log(data.users)
-      } catch (error) {
-      console.log(error)
-      }
-    }
+  const url =  `http://api.weatherapi.com/v1/current.json?key=${ApiKey}&q=${input}`
+  const response = await fetch(url)
+  const data = await response.json()
+  setWeather(data)
+  setInput('')
+  console.log(data)
 
-    useEffect(() => {
-      info()
-    }, [])
-  
+  setShowData(true)
+ 
+}
 
-  
   return (
     <>
-    <nav className="Nav">
-      <div className="text">
-        <h1>info</h1>
-      </div>
-      <button onClick={toggleTheme} className="theme-btn">{theme}</button>
-    </nav>
-        <div className="container">
-         {
-           users.map((user) => (
-               <div key={user.id} className="card">
-                  <img src={user.image} alt="" className="img" />
-                  <h1 className="text">{user.firstName}</h1>
-                  <p className="para">{user.age}</p>
-
-               </div>
-           ))
-         }
+      <div className="min-h-screen flex items-center justify-center bg-gray-500">
+      <div className="relative  bg-opacity-20 backdrop-blur-lg p-10  shadow-lg   transition-all duration-300">
+        <img className="absolute inset-0 w-full h-full object-cover rounded-lg" src="https://images.unsplash.com/photo-1498462335304-e7263fe3925a?q=80&w=1000&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8Ymx1cnJ5fGVufDB8fDB8fHww" alt="" />
+        <div className="relative">
+          <h1 className="text-2xl font-bold mb-4 text-white">Weather App</h1>
+          <input className="w-full p-2 mb-4 border rounded text-white bg-transparent focus:outline-none bg-opacity-20 backdrop-blur-lg" type="text" value={input} onChange={(e) => setInput(e.target.value)} />
+          <button className="w-full p-2 mb-4 bg-blue-900 backdrop-blur-lg text-white rounded" onClick={HandleSearch}>Search</button>
+          <CSSTransition in={showData} timeout={300} classNames="fade" unmountOnExit>
+          <div className="transition-all duration-300">
+                  <h2 className="text-white">{weather.location ? weather.location.country : ''}</h2>
+                  <h3 className="text-white">{weather.location ? weather.location.region : ''}</h3>
+                  <p className="text-white">{weather.current ? `Temperature: ${weather.current.temp_c}` : ''}</p>
+                  <img src={ weather.current && weather.current.condition ? weather.current.condition.icon : ''} alt="" />
+                  <p className="text-white">{weather.current ? `Condition: ${weather.current.condition.text}` : ''}</p>
+                  </div>
+          </CSSTransition>
         </div>
+      </div>
+    </div>
     </>
   )
 }
+
 
 export default App
